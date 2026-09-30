@@ -67,6 +67,17 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
         }
 
+        /* Кнопка "О проекте" на главной карте */
+        #about-btn {
+            position: absolute; top: 90px; right: 10px; z-index: 1000;
+            background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 8px 12px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+            backdrop-filter: blur(5px); text-transform: uppercase; letter-spacing: 1px;
+        }
+        #about-btn:hover { border-color: #00ffcc; color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.3); }
+
         /* Кастомный ползунок времени */
         input[type=range] {
             -webkit-appearance: none; background: rgba(255, 255, 255, 0.2);
@@ -91,6 +102,13 @@
         #legend-content::-webkit-scrollbar { width: 4px; }
         #legend-content::-webkit-scrollbar-track { background: transparent; }
         #legend-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        .status-badge {
+            display: inline-block; background-color: #ef4444; color: white;
+            font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;
+            text-transform: uppercase; font-weight: bold; margin-left: 8px;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -100,7 +118,7 @@
         <div class="max-w-2xl px-6 text-center flex flex-col items-center">
             <svg class="bird-logo" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20,60 L50,30 L80,60">
-                    <animate attributeName="d" dur="2s" repeatCount="indefinite" values="M20,60 L50,30 L80,60; M20,35 L50,60 L80,35; M20,60 L50,30 L80,60" keyTimes="0; 0.5; 1" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                    <animate attributeName="d" dur="1.2s" repeatCount="indefinite" values="M20,60 L50,30 L80,60; M20,35 L50,60 L80,35; M20,60 L50,30 L80,60" keyTimes="0; 0.5; 1" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
                 </path>
             </svg>
             <p class="text-xl md:text-2xl text-gray-300 font-light leading-relaxed mb-12">
@@ -112,7 +130,12 @@
 
     <!-- 2. ОБУЧАЮЩИЙ ЭКРАН -->
     <div id="edu-modal" class="fixed inset-0 z-[8000] bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-4 transition-opacity duration-500 opacity-0">
-        <div class="max-w-3xl w-full bg-[#0a0f18] border border-teal-500/30 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(0,255,204,0.1)] overflow-y-auto max-h-[90vh]">
+        <!-- Добавлен класс relative для абсолютного позиционирования крестика -->
+        <div class="max-w-3xl w-full bg-[#0a0f18] border border-teal-500/30 rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(0,255,204,0.1)] overflow-y-auto max-h-[90vh] relative">
+            
+            <!-- Крестик для закрытия (появляется после первого прочтения) -->
+            <button id="close-edu-btn" class="absolute top-4 right-4 w-10 h-10 bg-white/5 hover:bg-white/20 rounded-full text-white flex items-center justify-center text-2xl transition-colors hidden">&times;</button>
+
             <h2 class="text-3xl font-black text-teal-400 mb-6 uppercase tracking-wide">Миграция птиц</h2>
             <div class="space-y-6 text-gray-300 text-sm md:text-base font-light leading-relaxed">
                 <div>
@@ -127,6 +150,7 @@
                     <h3 class="text-white font-semibold text-lg mb-2">Как пользоваться картой?</h3>
                     <ul class="list-disc pl-5 space-y-2 text-teal-100/70">
                         <li>Используйте <b>ползунок времени</b> внизу экрана, чтобы следить за миграцией месяц за месяцем.</li>
+                        <li>Нажимайте на <b>светящиеся точки</b> (стаи птиц) прямо на карте, чтобы открыть их карточку.</li>
                         <li>Нажимайте на иконку <b>"?"</b> в панели легенды, чтобы узнать факты о каждом виде птиц.</li>
                     </ul>
                 </div>
@@ -135,13 +159,16 @@
                     <p class="text-xs text-gray-400">Проект основан на генерализованных пространственных данных баз <b>Movebank</b> и <b>GBIF</b>. Точные координаты математически интерполированы, чтобы отразить общую динамику перемещения видов по глобальным коридорам.</p>
                 </div>
             </div>
-            <div class="mt-10 text-center">
+            <div class="mt-10 text-center" id="understand-btn-container">
                 <button id="understand-btn" class="bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold text-lg py-4 px-12 rounded-full transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(0,255,204,0.5)]">
                     ПОНЯТНО!
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- Кнопка "О проекте" на самой карте -->
+    <button id="about-btn" style="display: none;">О ПРОЕКТЕ</button>
 
     <!-- 3. ИНТЕРФЕЙС КАРТЫ (ЛЕГЕНДА И ПОЛЗУНОК) -->
     
@@ -186,9 +213,17 @@
     <div id="info-modal" class="hidden fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative transform scale-95 transition-transform duration-300" id="modal-content">
             <button id="close-modal" class="absolute top-3 right-3 w-8 h-8 bg-black/50 hover:bg-black/80 rounded-full text-gray-300 hover:text-white flex items-center justify-center z-10 transition-colors">&times;</button>
+            
+            <!-- Кнопки навигации влево-вправо (расположены поверх фото) -->
+            <button id="prev-bird-btn" class="absolute top-24 md:top-32 left-2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full text-white flex items-center justify-center z-10 transition-colors text-2xl pb-1 shadow-lg border border-teal-500/30 hover:border-teal-400">&lsaquo;</button>
+            <button id="next-bird-btn" class="absolute top-24 md:top-32 right-2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full text-white flex items-center justify-center z-10 transition-colors text-2xl pb-1 shadow-lg border border-teal-500/30 hover:border-teal-400">&rsaquo;</button>
+
             <img id="modal-img" src="" class="w-full h-48 md:h-64 object-contain bg-slate-800 border-b border-slate-700 p-2">
             <div class="p-5 md:p-6">
-                <h2 id="modal-title" class="text-2xl font-bold text-teal-400 mb-3">Название</h2>
+                <div class="flex items-center mb-3">
+                    <h2 id="modal-title" class="text-2xl font-bold text-teal-400">Название</h2>
+                    <span id="modal-status" class="status-badge hidden">Красная книга</span>
+                </div>
                 <p id="modal-desc" class="text-gray-300 text-sm leading-relaxed font-light">Описание</p>
             </div>
         </div>
@@ -239,7 +274,7 @@
             ],
             "Центральноазиатский": [
                 {
-                    name: "Краснозобая казарка", color: "#ffffff", 
+                    name: "Краснозобая казарка", color: "#ffffff", status: "Красная книга",
                     desc: "Редчайший эндемик России. Чтобы защитить кладку от песцов, эти птицы намеренно строят свои гнезда вплотную к гнездам хищников — сапсанов или полярных сов, которые отгоняют наземных врагов от своей территории.",
                     img: "https://i.postimg.cc/SK4zXR42/redzob-kazarka.jpg",
                     track: { 8: [73.0, 80.0], 9: [66.0, 70.0], 10: [50.0, 50.0], 11: [46.0, 35.0], 12: [44.0, 28.0], 1: [43.5, 28.5], 2: [45.0, 30.0], 3: [50.0, 40.0], 4: [58.0, 55.0], 5: [67.0, 70.0], 6: [72.0, 78.0], 7: [73.0, 80.0] }
@@ -253,13 +288,13 @@
             ],
             "Восточноазиатский": [
                 {
-                    name: "Стерх", color: "#ef4444", 
+                    name: "Стерх", color: "#ef4444", status: "Красная книга",
                     desc: "Белый журавль, гнездящийся исключительно на севере России. Находится под угрозой исчезновения. Птенцы вылупляются с рыжим пухом для маскировки в тундре и приобретают белоснежное оперение только к третьему году жизни.",
                     img: "https://i.postimg.cc/q7rCtqry/sterh.jpg",
                     track: { 8: [70.0, 145.0], 9: [55.0, 135.0], 10: [40.0, 125.0], 11: [32.0, 120.0], 12: [29.0, 116.0], 1: [28.0, 116.0], 2: [30.0, 118.0], 3: [40.0, 122.0], 4: [50.0, 128.0], 5: [60.0, 135.0], 6: [70.0, 142.0], 7: [70.0, 145.0] }
                 },
                 {
-                    name: "Кулик-лопатень", color: "#f97316", 
+                    name: "Кулик-лопатень", color: "#f97316", status: "Красная книга",
                     desc: "Вид на грани полного исчезновения, в мире осталось не более 200 пар. Гнездится только на Чукотке. Обладает уникальным клювом в форме лопаточки, которым процеживает ил в поисках мелких беспозвоночных.",
                     img: "https://i.postimg.cc/HkXys5qp/lopaten.jpg",
                     track: { 8: [65.0, 175.0], 9: [55.0, 155.0], 10: [35.0, 120.0], 11: [20.0, 110.0], 12: [10.0, 105.0], 1: [8.0, 103.0], 2: [12.0, 108.0], 3: [25.0, 115.0], 4: [40.0, 125.0], 5: [55.0, 145.0], 6: [62.0, 165.0], 7: [65.0, 175.0] }
@@ -275,6 +310,7 @@
 
         const activeMarkers = {}; 
         let flatBirdsList = [];   
+        let currentBirdIndex = 0; // Для навигации в карточке
 
         const legendContainer = document.getElementById('legend-container');
         
@@ -286,10 +322,14 @@
             birds.forEach(bird => {
                 flatBirdsList.push(bird);
                 
+                const statusDot = bird.status ? `<div class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1 shadow-[0_0_5px_red]" title="${bird.status}"></div>` : '';
+
                 html += `
                     <div class="flex items-center gap-3 group">
                         <div class="w-3 h-3 rounded-full flex-shrink-0" style="background:${bird.color}; box-shadow: 0 0 10px ${bird.color}"></div>
-                        <span class="flex-1 text-sm text-slate-200 group-hover:text-white transition-colors">${bird.name}</span>
+                        <div class="flex-1 flex items-center text-sm text-slate-200 group-hover:text-white transition-colors">
+                            ${bird.name} ${statusDot}
+                        </div>
                         <button class="info-btn" onclick="openInfoModal('${bird.name}')">?</button>
                     </div>`;
                 
@@ -301,11 +341,15 @@
                 }).addTo(map);
 
                 const startPos = bird.track[8];
+                
+                // Создаем маркер и добавляем клик по нему (открывает карточку)
                 const marker = L.circleMarker(startPos, {
                     radius: 6, fillColor: bird.color, color: '#fff', 
                     weight: 1.5, opacity: 1, fillOpacity: 0.9,
-                    className: 'glow-marker'
-                }).addTo(map);
+                    className: 'glow-marker cursor-pointer'
+                })
+                .on('click', () => openInfoModal(bird.name))
+                .addTo(map);
                 
                 activeMarkers[bird.name] = { marker: marker, data: bird };
             });
@@ -316,7 +360,6 @@
 
         // ЛОГИКА МОБИЛЬНОЙ ЛЕГЕНДЫ
         document.getElementById('mobile-legend-toggle').addEventListener('click', () => {
-            // Срабатывает только на экранах меньше 768px (мобилки)
             if (window.innerWidth < 768) { 
                 document.getElementById('legend-content').classList.toggle('hidden');
                 document.getElementById('legend-chevron').classList.toggle('rotate-180');
@@ -350,6 +393,7 @@
             updatePositions(parseFloat(e.target.value));
         });
 
+        // Экраны и кнопки О Проекте
         document.getElementById('start-btn').addEventListener('click', () => {
             const splash = document.getElementById('splash-screen');
             splash.classList.add('opacity-0');
@@ -365,7 +409,7 @@
             }, 800); 
         });
 
-        document.getElementById('understand-btn').addEventListener('click', () => {
+        function closeEduModal() {
             const eduModal = document.getElementById('edu-modal');
             eduModal.classList.add('opacity-0');
             
@@ -373,22 +417,36 @@
                 eduModal.classList.add('hidden');
                 
                 map.invalidateSize(); 
-                // Показываем интерфейс после онбординга
                 document.getElementById('ui-panel').style.display = 'block';
                 document.getElementById('ui-timeline').style.display = 'block';
+                
+                // Показываем кнопку "О проекте" и разрешаем крестик на будущее
+                document.getElementById('about-btn').style.display = 'flex';
+                document.getElementById('close-edu-btn').classList.remove('hidden');
             }, 500);
+        }
+
+        document.getElementById('understand-btn').addEventListener('click', closeEduModal);
+        document.getElementById('close-edu-btn').addEventListener('click', closeEduModal);
+        
+        // Открыть окно О Проекте снова
+        document.getElementById('about-btn').addEventListener('click', () => {
+            const eduModal = document.getElementById('edu-modal');
+            eduModal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                eduModal.classList.remove('opacity-0');
+            });
         });
 
+        // Модальное окно птицы с навигацией
         const infoModal = document.getElementById('info-modal');
         const modalContent = document.getElementById('modal-content');
         
         window.openInfoModal = function(birdName) {
-            const bird = flatBirdsList.find(b => b.name === birdName);
-            if(bird) {
-                document.getElementById('modal-title').innerText = bird.name;
-                document.getElementById('modal-title').style.color = bird.color;
-                document.getElementById('modal-desc').innerText = bird.desc;
-                document.getElementById('modal-img').src = bird.img;
+            const index = flatBirdsList.findIndex(b => b.name === birdName);
+            if(index !== -1) {
+                currentBirdIndex = index;
+                updateModalContent();
                 
                 infoModal.classList.remove('hidden');
                 requestAnimationFrame(() => {
@@ -397,6 +455,36 @@
                 });
             }
         };
+
+        function updateModalContent() {
+            const bird = flatBirdsList[currentBirdIndex];
+            document.getElementById('modal-title').innerText = bird.name;
+            document.getElementById('modal-title').style.color = bird.color;
+            document.getElementById('modal-desc').innerText = bird.desc;
+            document.getElementById('modal-img').src = bird.img;
+            
+            const statusBadge = document.getElementById('modal-status');
+            if (bird.status) {
+                statusBadge.innerText = bird.status;
+                statusBadge.classList.remove('hidden');
+            } else {
+                statusBadge.classList.add('hidden');
+            }
+        }
+
+        // Перелистывание влево
+        document.getElementById('prev-bird-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // Не дает окну закрыться при клике
+            currentBirdIndex = (currentBirdIndex - 1 + flatBirdsList.length) % flatBirdsList.length;
+            updateModalContent();
+        });
+
+        // Перелистывание вправо
+        document.getElementById('next-bird-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentBirdIndex = (currentBirdIndex + 1) % flatBirdsList.length;
+            updateModalContent();
+        });
 
         document.getElementById('close-modal').addEventListener('click', closeInfoModal);
         infoModal.addEventListener('click', (e) => {
